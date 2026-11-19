@@ -1,0 +1,2 @@
+# Golden-Hour-Bakehouse-Ingredient-Inventory-and-Recipe-Costing-System
+A web app for Golden Hour Bakehouse to manage ingredients, suppliers, purchases, inventory, and recipes. It uses weighted average costing to update ingredient costs and calculates production costs, cost per product, and suggested prices based on a target profit margin. Built with HTML, CSS, JavaScript, PHP, and MySQL using PDO.
