@@ -1,81 +1,117 @@
-# Golden Hour Bakehouse Ingredient Inventory and Recipe Costing System
+# Golden Hour Bakehouse Management System
 
-## Project description
+## Description
 
-A PHP web application for Golden Hour Bakehouse that manages ingredients, suppliers, purchases, inventory movements, recipes, recipe costs, and operational reports. It updates ingredient costs using weighted-average costing and suggests selling prices from a target profit margin.
-
-## Overview
-
-The system was developed for the proposed Golden Hour Bakehouse. Its documented scope is administration of bakery ingredients and recipe costing; it does not include customer ordering or online payments. The documented application uses PHP with HTML5, CSS3, and JavaScript, MySQL 8.4.3, and PDO for database access.
+**Golden Hour Bakehouse Management System** is a web-based bakery management platform designed to streamline daily bakehouse operations. Originally focused on **core ingredient management and recipe costing**, the system has been expanded with modern operational capabilities—including automated supplier price tracking, waste and spoilage logging, low-stock notifications, batch-sizing calculators, configurable system settings, and **automated nutritional analysis as an additional feature**.
 
 ## Features
 
-- Administrator login and session-based access.
-- Ingredient records, stock quantities, low-stock information, and weighted-average costs.
-- Supplier records and purchase recording, including purchase items and totals.
-- Conversion of supported purchase units to ingredient base units.
-- Purchase processing that updates stock and weighted-average ingredient costs.
-- Inventory transactions for purchases, usage, wastage, and stock adjustments.
-- Recipe records, ingredient quantities, batch yields, and additional production costs.
-- Recipe costing for ingredient costs, additional costs, batch totals, and cost per product.
-- Suggested selling price based on a target profit margin, with costing history.
-- Reports for purchases, inventory movements, low-stock information, and recipe costing, with date filtering documented for reports.
+* **Core Ingredient Management & Recipe Costing**: Manage raw ingredients with base/purchase units (`g`, `ml`, `pcs`), minimum stock thresholds, and weighted average unit costs. Build multi-ingredient recipes with overhead costs (packaging, gas/electricity, labor) to compute unit production costs, target profit margins, and suggested selling prices.
+* **Automated Supplier Price Tracking**: Records unit price history on every purchase, calculates price-change percentages against prior records, flags sharp supplier price spikes using a configurable threshold, and displays price trends alongside supplier management.
+* **Waste and Spoilage Logging**: Records ingredient wastage and spoilage in inventory adjustments with categorized reason codes and notes, updates stock balances automatically, calculates estimated financial loss (in TZS), and surfaces totals in reports.
+* **Low-Stock Notifications**: Monitors ingredient stock levels against minimum thresholds, triggers or resolves alerts automatically, supports alert acknowledgment (`Ack`) directly from the dashboard, and can be toggled on or off in system settings.
+* **Batch-Sizing Calculator**: Synchronizes batch multipliers and target output yields in real time, scales ingredient quantities and production costs, checks live stock availability and shortfalls before baking, and saves scaled costing snapshots.
+* **Interactive Bakery Dashboard**: Displays live KPIs (total ingredients, active recipes, suppliers, and unread low-stock alerts), a 7-day purchase overview bar chart, a recipe cost breakdown donut chart, recent inventory activities, and quick navigation actions.
+* **Reports & Analytics**: Date-range reporting covering low-stock ingredients, inventory movement logs, waste and spoilage financial loss summaries, purchase history, and recipe costing records with live search filtering.
+* **System Settings & Theme Customization**: Configure interface themes (*Midnight Dark & Gold*, *Warm Espresso & Gold*, and *Light Bakehouse Cream*), bakery display name, low-stock notification toggles, supplier price-spike thresholds, default profit margins, initial visible table row limits, and currency labels.
+* **Automated Nutritional Analysis *(Additional Feature)***: Stores per-base-unit nutritional metadata on ingredients (`calories_per_unit`, `protein_g_per_unit`, `carbs_g_per_unit`, `fat_g_per_unit`, `sugar_g_per_unit`, `fiber_g_per_unit`, `sodium_mg_per_unit`) and automatically calculates full-batch and per-yield-unit nutritional breakdowns on recipes.
 
-## Technology
+## Technologies Used
 
-| Area | Technology |
-| --- | --- |
-| Server-side application | PHP |
-| User interface | HTML5, CSS3, JavaScript |
-| Database | MySQL 8.4.3 |
-| Database access | PHP Data Objects (PDO) |
+* **Frontend**: HTML5, CSS3 (Custom Dark, Espresso, and Light Theme Overrides & Responsive Grid Layouts), Vanilla JavaScript (ES6+)
+* **Backend**: PHP 8+ (PDO with Prepared Statements & Transactions, CSRF Token Protection, Session Authentication)
+* **Database**: MySQL / MariaDB (`InnoDB`, `utf8mb4`)
+* **Local Development Environment**: Laragon / Apache / phpMyAdmin
 
-The project report also identifies Laragon as the local development environment used during development. Confirm the runtime and versions used for the current deployment before relying on that environment detail.
+## Data Models
 
-## Data model
+* **Core Operational & Costing Entities**:
+  * `users`: Stores administrator authentication credentials and profile details.
+  * `ingredients`: Stores ingredient metadata, base/purchase units, `current_stock`, `minimum_stock`, `average_cost_per_unit`, active status, and per-base-unit nutritional columns.
+  * `suppliers`, `purchases`, & `purchase_items`: Track vendor details, purchase dates, line-item quantities, and unit costs.
+  * `recipes`, `recipe_ingredients`, `recipe_other_costs`, & `recipe_cost_history`: Model bakery formulas, dynamic ingredient quantity mappings (`quantity_in_base_unit` / `quantity_required`), additional overhead costs, serving labels, and saved batch costing snapshots.
+  * `inventory_adjustments`: Logs stock movements including purchases, manual adjustments, and wastage/spoilage entries with estimated financial loss impact.
+* **Analytics, Alerts & Configuration Entities**:
+  * `supplier_price_history`: Stores historical supplier unit prices and percentage price-change comparisons across purchases.
+  * `low_stock_notifications`: Tracks active, acknowledged, and resolved low-stock alerts with stock snapshots, user acknowledgments, and timestamps.
+  * `system_settings`: Stores key-value system preferences (`bakery_name`, `theme_mode`, `notifications_enabled`, `price_spike_threshold_pct`, `default_profit_margin`, `table_initial_rows`, `currency_code`).
 
-The project report documents these ten MySQL tables:
+## Project Structure
 
-| Table | Purpose |
-| --- | --- |
-| `users` | Administrator account information. |
-| `suppliers` | Supplier contact and identification details. |
-| `ingredients` | Ingredient details, stock quantities, and weighted-average costs. |
-| `purchases` | Purchase records and supplier association, where provided. |
-| `purchase_items` | Ingredients and quantities included in each purchase. |
-| `inventory_transactions` | Records purchases, usage, wastage, and stock adjustments. |
-| `recipes` | Recipe descriptions, instructions, and batch yields. |
-| `recipe_ingredients` | Ingredient requirements and quantities for recipes. |
-| `recipe_other_costs` | Additional recipe production costs, such as packaging or electricity. |
-| `recipe_cost_history` | Saved recipe costing results, including batch yield and suggested selling price. |
+```text
+golden-hour-bakehouse/
+├── assets/
+│   ├── css/
+│   │   └── style.css                # Core application stylesheet and dark-and-gold UI components
+│   └── screenshots/                 # Application preview screenshots for documentation
+├── config/
+│   ├── database.php                 # PDO MySQL connection configuration
+│   ├── notifications_helper.php     # Automated low-stock notification sync helper
+│   └── settings_helper.php          # System settings persistence & dynamic theme CSS overrides
+├── pages/
+│   ├── ingredients.php              # Ingredient catalog, stock thresholds & per-unit nutrition
+│   ├── suppliers.php                # Supplier management & automated supplier price tracker
+│   ├── purchases.php                # Multi-item purchase entry, cost averaging & price alerts
+│   ├── inventory.php                # Stock overview, manual adjustments & waste/spoilage logging
+│   ├── recipes.php                  # Recipe formula builder & automated nutritional analysis
+│   ├── recipe_costing.php           # Two-way batch-sizing calculator & profit margin pricing
+│   ├── reports.php                  # Date-filtered operational, financial & wastage reports
+│   └── settings.php                 # Theme switcher, notification toggles & system defaults
+├── dashboard.php                    # Main executive dashboard with charts & low-stock alerts
+├── login.php                        # Administrator authentication page
+├── logout.php                       # Session termination script
+├── golden_hour_bakehouse.sql        # Database schema and initial seed data
+└── README.md                        # Project documentation
+```
 
-This table list is based on the project report. The database schema or migration files were not present in the available project files, so confirm table names and fields against the deployed database before making schema changes.
+## Installation
 
-## Costing behavior
+1. **Download or Clone the Repository**:
+   Place the `golden-hour-bakehouse` folder inside your web server's document root (for example, `C:\laragon\www\golden-hour-bakehouse` on Laragon or `htdocs` on XAMPP).
+2. **Start Web & Database Services**:
+   Launch Laragon (or Apache and MySQL) and verify that PHP 8.0+ and MySQL/MariaDB are running.
+3. **Verify File Permissions**:
+   Ensure PHP has read access to `config/` and `pages/` and session storage is enabled in `php.ini`.
 
-Purchases recalculate an ingredient's weighted-average cost using the existing stock and the newly purchased quantity and cost. Recipe costing uses the current ingredient costs together with configured additional recipe costs. It calculates batch cost and cost per product and can suggest a selling price using a target profit margin. Previous costing results are retained in recipe costing history.
+## Database Setup
 
-Inventory transactions track stock movements. Recipe costing estimates production costs; the available project documentation does not establish that costing a recipe automatically consumes ingredient stock.
+1. Open **phpMyAdmin** (`http://localhost/phpmyadmin`) or MySQL Workbench.
+2. Create and select the `golden_hour_bakehouse` database with collation `utf8mb4_unicode_ci`:
+   ```sql
+   CREATE DATABASE IF NOT EXISTS golden_hour_bakehouse
+   CHARACTER SET utf8mb4
+   COLLATE utf8mb4_unicode_ci;
 
-## Setup and configuration
+   USE golden_hour_bakehouse;
+   ```
+3. Import `golden_hour_bakehouse.sql` to create all core and expanded tables (`users`, `ingredients`, `suppliers`, `purchases`, `purchase_items`, `supplier_price_history`, `inventory_adjustments`, `low_stock_notifications`, `recipes`, `recipe_ingredients`, `recipe_other_costs`, `recipe_cost_history`, and `system_settings`).
+4. Open `config/database.php` and confirm your MySQL credentials match your local environment:
+   ```php
+   $host = "localhost";
+   $dbname = "golden_hour_bakehouse";
+   $username = "root";
+   $password = "";
+   ```
 
-The available project materials do not include application source files, a database export or migration, or deployment instructions. As a result, installation commands, database creation/import steps, environment variables, configuration file locations, web-server settings, and initial administrator account creation cannot be stated accurately here.
+## Usage
 
-Before this README can include runnable setup instructions, confirm and provide:
+1. Navigate to `http://localhost/golden-hour-bakehouse/login.php` (or `http://golden-hour-bakehouse.test/login.php`) in your browser and sign in with your administrator credentials.
+2. **Manage Ingredients**: Go to **Ingredients** to register raw materials, configure minimum stock thresholds, and optionally enter per-base-unit nutrition values.
+3. **Register Suppliers & Record Purchases**: Add vendors under **Suppliers**, then record incoming stock under **Purchases** to automatically update stock balances, weighted average unit costs, supplier price history, and low-stock alerts.
+4. **Monitor Stock & Log Wastage**: Use **Inventory** to track real-time stock status and log spoilage or wastage with automatic financial loss calculation.
+5. **Build Recipes & View Nutrition**: Create formulas and overhead costs in **Recipes**, and inspect automated per-unit and full-batch nutritional breakdowns.
+6. **Scale Batches & Price Products**: Open **Recipe Costing** to scale recipes via batch multiplier or target output yield, check ingredient shortfalls, and calculate suggested selling prices.
+7. **Review Reports & Customize Settings**: Generate period reports in **Reports** and configure themes, alert toggles, and default profit margins in **Settings**.
 
-1. The application source repository or deployment package and its actual entry point.
-2. The schema creation/import procedure and any seed data.
-3. The supported PHP version and required PHP extensions.
-4. The actual database connection configuration method and required settings.
-5. The web-server or local-runtime configuration used to serve the application.
-6. The administrator account provisioning or password-reset process. No default credentials are documented here.
+## Screenshots
 
-Do not place real database passwords or administrator credentials in this README.
+* `assets/screenshots/dashboard.png` — Bakery Dashboard overview, charts, KPI cards, and low-stock alerts.
+* `assets/screenshots/ingredients.png` — Ingredient management form, search/filter bar, and stock/nutrition table.
+* `assets/screenshots/purchases.png` — Multi-item purchase entry form and supplier price tracking updates.
+* `assets/screenshots/recipe-costing.png` — Two-way batch-sizing calculator, stock check, and scaled costing history.
+* `assets/screenshots/reports.png` — Reporting period controls, summary metrics, and waste/spoilage report.
+* `assets/screenshots/settings.png` — System settings for theme switching, notification alerts, and default thresholds.
 
-## Verification status
+## Author
 
-The project report states that module and integration checks were completed successfully. This repository mirror did not contain executable application files or test instructions, so those results could not be independently rerun while preparing this README.
-
-## Scope notes
-
-The documented system has one administrator role. Customer accounts, customer ordering, online payments, and sales/order integration are outside the implemented scope described in the project report. Forecasting, mobile-specific enhancements, and automated stock deduction from recipe costing are not presented here as implemented features.
+* **Lisa Kemi** — [lisakemi](https://github.com/lisakemi)
