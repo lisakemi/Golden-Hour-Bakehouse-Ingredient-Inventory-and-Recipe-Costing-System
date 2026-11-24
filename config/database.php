@@ -3,7 +3,7 @@
 $host = "localhost";
 $dbname = "golden_hour_bakehouse";
 $username = "root";
-$password = "take123@456!!!";
+$password = " ";
 
 try {
 
